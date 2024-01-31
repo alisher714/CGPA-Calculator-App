@@ -34,19 +34,22 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
+data class Semester(val grade: String, val credit: Int?)
 class MainActivity : ComponentActivity() {
+    private var semester:MutableList<Semester> = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-
+                    CGPA(semester)
                 }
             }
         }
@@ -56,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun CGPA(){
+fun CGPA(semesters : MutableList<Semester>){
     var grade1 by remember { mutableStateOf("") }
     var Credit1 by remember { mutableStateOf<Int?>( null) }
     var grade2 by remember { mutableStateOf("") }
@@ -65,6 +68,7 @@ fun CGPA(){
     var Credit3 by remember { mutableStateOf<Int?>( null) }
     var grade4 by remember { mutableStateOf("") }
     var Credit4 by remember { mutableStateOf<Int?>( null) }
+    var cgpa by remember { mutableStateOf(0.0) }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -105,7 +109,31 @@ fun CGPA(){
         Row() {
             Column(modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween) {
-                Button(onClick = { /*TODO*/ },
+                Button(onClick = { /*TODO*/
+                    val semester = Semester(grade1, Credit1 ?: 0)
+                    semesters.add(semester);
+                    val total_credit = semesters.sumOf { it.credit }
+                    val total_grade_point = semesters.sumOf { calculateGradePoint(it.grade, it.credit) }
+
+                    if(total_credit == 0){
+                        cgpa = total_grade_point / total_credit.toDouble()
+                    }
+                    else{
+                        cgpa = 0.0
+                    }
+
+
+                    
+                    grade1 = "";
+                    Credit1 = null;
+                    grade2 = "";
+                    Credit2 = null;
+                    grade3 = "";
+                    Credit3 = null;
+                    grade4 = "";
+                    Credit4 = null;
+
+                                 },
                     colors = ButtonDefaults.buttonColors(Color(0xFFBEABED)
                         ),shape = RoundedCornerShape(15.dp))
                 {
@@ -118,7 +146,7 @@ fun CGPA(){
                     .wrapContentHeight(), color = Color(0xFF263238),
                     shape = RoundedCornerShape(13.dp)) {
                     Text(modifier = Modifier.padding(start = 10.dp),
-                        text = "Your all time \nCPGA: ",
+                        text = "Your all time \nCPGA: $cgpa",
                         style = TextStyle(fontFamily = FontFamily.Monospace,
                             fontSize = 16.sp, color = Color(0xFFFFFFFF)))
                 }
@@ -136,12 +164,16 @@ fun CGPA(){
                             fontSize = 16.sp, color = Color(0xFFFFFFFF)
                         )
                     )
-                    Text(text = "Grade: , Credit: ",
-                        color = Color.White,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth())
+                    if(semesters.isNotEmpty()) {
+                        for (semester in semesters){
+                            Text(text = "Grade: , Credit: ",
+                                color = Color.White,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth())
+                        }
+                    }
                 }
             }
         }
@@ -149,6 +181,20 @@ fun CGPA(){
 
     }
 }
+
+
+fun calculateGradePoint(grade: String, credit: Int?) : Double{
+    return when(grade.uppercase())
+    {
+        "A"-> 4.0
+        "B"-> 3.0
+        "C"-> 2.0
+        "D"-> 1.0
+        else -> 0.0
+    } * credit!!
+
+}
+
 
 @Composable
 fun subjectText(subject: String) {
@@ -174,7 +220,7 @@ fun GradeTextField(grade: String, onValueChange:(String)->Unit){
             unfocusedIndicatorColor = Color.Transparent,
             containerColor = Color(0xFF7E57C2)
         ), shape = RoundedCornerShape(15.dp),
-        textStyle = TextStyle(fontSize = 12.sp, color = Color.White)
+        textStyle = TextStyle(fontSize = 12.sp, color = Color.Black)
         )
 }
 
@@ -200,13 +246,13 @@ fun Spacer8dp()
 {
     Spacer(modifier = Modifier.padding(top = 8.dp))
 }
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyApplicationTheme {
-        CGPA();
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    MyApplicationTheme {
+//        CGPA();
+//    }
+//}
 
 //@Preview(showBackground = true)
 //@Composable
