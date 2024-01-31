@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
-data class Semester(val grade: String, val credit: Int?)
+data class Semester(val grade: String, val credit: Int)
 class MainActivity : ComponentActivity() {
     private var semester:MutableList<Semester> = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +111,7 @@ fun CGPA(semesters : MutableList<Semester>){
                 verticalArrangement = Arrangement.SpaceBetween) {
                 Button(onClick = { /*TODO*/
                     val semester = Semester(grade1, Credit1 ?: 0)
-                    semesters.add(semester);
+                        semesters.add(semester)
                     val total_credit = semesters.sumOf { it.credit }
                     val total_grade_point = semesters.sumOf { calculateGradePoint(it.grade, it.credit) }
 
@@ -122,8 +122,6 @@ fun CGPA(semesters : MutableList<Semester>){
                         cgpa = 0.0
                     }
 
-
-                    
                     grade1 = "";
                     Credit1 = null;
                     grade2 = "";
@@ -166,7 +164,7 @@ fun CGPA(semesters : MutableList<Semester>){
                     )
                     if(semesters.isNotEmpty()) {
                         for (semester in semesters){
-                            Text(text = "Grade: , Credit: ",
+                            Text(text = "Grade: ${semester.grade}, Credit: ${semester.credit}",
                                 color = Color.White,
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 16.sp,
@@ -183,7 +181,7 @@ fun CGPA(semesters : MutableList<Semester>){
 }
 
 
-fun calculateGradePoint(grade: String, credit: Int?) : Double{
+fun calculateGradePoint(grade: String, credit: Int) : Double{
     return when(grade.uppercase())
     {
         "A"-> 4.0
@@ -191,7 +189,7 @@ fun calculateGradePoint(grade: String, credit: Int?) : Double{
         "C"-> 2.0
         "D"-> 1.0
         else -> 0.0
-    } * credit!!
+    } * credit
 
 }
 
