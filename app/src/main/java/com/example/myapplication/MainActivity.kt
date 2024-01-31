@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
@@ -115,12 +117,12 @@ fun CGPA(semesters : MutableList<Semester>){
                     val total_credit = semesters.sumOf { it.credit }
                     val total_grade_point = semesters.sumOf { calculateGradePoint(it.grade, it.credit) }
 
-                    if(total_credit == 0){
+//                    if(total_credit == 0){
                         cgpa = total_grade_point / total_credit.toDouble()
-                    }
-                    else{
-                        cgpa = 0.0
-                    }
+//                    }
+//                    else{
+//                        cgpa = 0.0
+//                    }
 
                     grade1 = "";
                     Credit1 = null;
@@ -218,7 +220,8 @@ fun GradeTextField(grade: String, onValueChange:(String)->Unit){
             unfocusedIndicatorColor = Color.Transparent,
             containerColor = Color(0xFF7E57C2)
         ), shape = RoundedCornerShape(15.dp),
-        textStyle = TextStyle(fontSize = 12.sp, color = Color.Black)
+        textStyle = TextStyle(fontSize = 12.sp, color = Color.White),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
 }
 
@@ -230,13 +233,15 @@ fun CreditTextField(credit: Int?, onValueChange:(Int?)->Unit){
     }, modifier = Modifier
         .fillMaxWidth()
         .height(50.dp),
-        label = { Text(text = "Enter Credit", color = Color.White, fontSize = 14.sp)},
+        label = { Text(text = "Enter Credit", color = Color.Black, fontSize = 14.sp)},
         colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             containerColor = Color(0xFF7D8CCED)
         ), shape = RoundedCornerShape(15.dp),
-        textStyle = TextStyle(fontSize = 12.sp, color = Color.White)
+        textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+
     )
 }
 @Composable
