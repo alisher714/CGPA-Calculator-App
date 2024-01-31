@@ -1,6 +1,8 @@
 package com.example.myapplication
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -41,17 +43,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 
 data class Semester(val grade: String, val credit: Int)
 class MainActivity : ComponentActivity() {
-    private var semester:MutableList<Semester> = mutableListOf()
+    private var semester: MutableList<Semester> = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+                ) {
                     CGPA(semester)
+
                 }
             }
         }
@@ -59,22 +66,24 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
 @Composable
-fun CGPA(semesters : MutableList<Semester>){
+fun CGPA(semesters: MutableList<Semester>) {
     var grade1 by remember { mutableStateOf("") }
-    var Credit1 by remember { mutableStateOf<Int?>( null) }
+    var Credit1 by remember { mutableStateOf<Int?>(null) }
     var grade2 by remember { mutableStateOf("") }
-    var Credit2 by remember { mutableStateOf<Int?>( null) }
+    var Credit2 by remember { mutableStateOf<Int?>(null) }
     var grade3 by remember { mutableStateOf("") }
-    var Credit3 by remember { mutableStateOf<Int?>( null) }
+    var Credit3 by remember { mutableStateOf<Int?>(null) }
     var grade4 by remember { mutableStateOf("") }
-    var Credit4 by remember { mutableStateOf<Int?>( null) }
+    var Credit4 by remember { mutableStateOf<Int?>(null) }
     var cgpa by remember { mutableStateOf(0.0) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(10.dp) ) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)
+    ) {
         Text(
             text = "Welcome to our \nCGPA Calculator",
             modifier = Modifier.fillMaxWidth(),
@@ -88,72 +97,112 @@ fun CGPA(semesters : MutableList<Semester>){
         Spacer(modifier = Modifier.padding(top = 10.dp))
         subjectText(subject = "Subject 1");
         Spacer8dp()
-        GradeTextField(grade1){grade1=it}
+        GradeTextField(grade1) { grade1 = it }
         Spacer8dp()
-        CreditTextField(Credit1) {Credit1=it}
+        CreditTextField(Credit1) { Credit1 = it }
         subjectText(subject = "Subject 2");
         Spacer8dp()
-        GradeTextField(grade2){grade2=it}
+        GradeTextField(grade2) { grade2 = it }
         Spacer8dp()
-        CreditTextField(Credit2) {Credit2=it}
+        CreditTextField(Credit2) { Credit2 = it }
         subjectText(subject = "Subject 3");
         Spacer8dp()
-        GradeTextField(grade3){grade3=it}
+        GradeTextField(grade3) { grade3 = it }
         Spacer8dp()
-        CreditTextField(Credit3) {Credit3=it}
+        CreditTextField(Credit3) { Credit3 = it }
         subjectText(subject = "Subject 4");
         Spacer8dp()
-        GradeTextField(grade4){grade4=it}
+        GradeTextField(grade4) { grade4 = it }
         Spacer8dp()
-        CreditTextField(Credit4) {Credit4=it}
+        CreditTextField(Credit4) { Credit4 = it }
         Spacer8dp()
 
         Row() {
-            Column(modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween) {
-                Button(onClick = { /*TODO*/
-                    val semester = Semester(grade1, Credit1 ?: 0)
+            Column(
+                modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = { /*TODO*/
+                        val semester = Semester(grade1, Credit1 ?: 0)
                         semesters.add(semester)
-                    val total_credit = semesters.sumOf { it.credit }
-                    val total_grade_point = semesters.sumOf { calculateGradePoint(it.grade, it.credit) }
+                        val total_credit = semesters.sumOf { it.credit }
+                        val total_grade_point =
+                            semesters.sumOf { calculateGradePoint(it.grade, it.credit) }
 
-//                    if(total_credit == 0){
-                        cgpa = total_grade_point / total_credit.toDouble()
-//                    }
-//                    else{
-//                        cgpa = 0.0
-//                    }
+                        if (total_credit == 0) {
+                            cgpa = total_grade_point / total_credit.toDouble()
 
-                    grade1 = "";
-                    Credit1 = null;
-                    grade2 = "";
-                    Credit2 = null;
-                    grade3 = "";
-                    Credit3 = null;
-                    grade4 = "";
-                    Credit4 = null;
+                        } else {
+                            cgpa = 0.0
+                        }
 
-                                 },
-                    colors = ButtonDefaults.buttonColors(Color(0xFFBEABED)
-                        ),shape = RoundedCornerShape(15.dp))
-                {
-                    Text(text = "Calculate CGPA", fontSize = 16.sp, color = Color.Black,
+                        val db = Firebase.firestore
+                        // Create a new user with a first and last name
+                        val user = hashMapOf(
+                            "CGPA" to cgpa,
+                            "Grade" to semester.grade,
+                            "Credit" to semester.credit
+                        )
+
+                        // Add a new document with a generated ID
+                        db.collection("users")
+                            .add(user)
+                            .addOnSuccessListener { documentReference ->
+                                Log.d(
+                                    TAG,
+                                    "DocumentSnapshot added with ID: ${documentReference.id}"
+                                )
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(TAG, "Error adding document", e)
+                            }
+
+                        grade1 = "";
+                        Credit1 = null;
+                        grade2 = "";
+                        Credit2 = null;
+                        grade3 = "";
+                        Credit3 = null;
+                        grade4 = "";
+                        Credit4 = null;
+
+                    }, colors = ButtonDefaults.buttonColors(
+                        Color(0xFFBEABED)
+                    ), shape = RoundedCornerShape(15.dp)
+                ) {
+                    Text(
+                        text = "Calculate CGPA",
+                        fontSize = 16.sp,
+                        color = Color.Black,
                         fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.W500)
+                        fontWeight = FontWeight.W500
+                    )
                 }
-                Surface(modifier = Modifier
-                    .width(179.dp)
-                    .wrapContentHeight(), color = Color(0xFF263238),
-                    shape = RoundedCornerShape(13.dp)) {
-                    Text(modifier = Modifier.padding(start = 10.dp),
+                Surface(
+                    modifier = Modifier
+                        .width(179.dp)
+                        .wrapContentHeight(),
+                    color = Color(0xFF263238),
+                    shape = RoundedCornerShape(13.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.padding(start = 10.dp),
                         text = "Your all time \nCPGA: $cgpa",
-                        style = TextStyle(fontFamily = FontFamily.Monospace,
-                            fontSize = 16.sp, color = Color(0xFFFFFFFF)))
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 16.sp,
+                            color = Color(0xFFFFFFFF)
+                        )
+                    )
                 }
             }
-            Surface(modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 10.dp), color = Color(0xFF263238), shape = RoundedCornerShape(15.dp)) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 10.dp),
+                color = Color(0xFF263238),
+                shape = RoundedCornerShape(15.dp)
+            ) {
                 Column() {
                     Text(
                         modifier = Modifier.padding(start = 10.dp),
@@ -161,35 +210,36 @@ fun CGPA(semesters : MutableList<Semester>){
                         textAlign = TextAlign.Center,
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 16.sp, color = Color(0xFFFFFFFF)
+                            fontSize = 16.sp,
+                            color = Color(0xFFFFFFFF)
                         )
                     )
-                    if(semesters.isNotEmpty()) {
-                        for (semester in semesters){
-                            Text(text = "Grade: ${semester.grade}, Credit: ${semester.credit}",
+                    if (semesters.isNotEmpty()) {
+                        for (semester in semesters) {
+                            Text(
+                                text = "Grade: ${semester.grade}",
+//                                Text(text = "GPA: ${semester}",
                                 color = Color.White,
-                                fontFamily = FontFamily.Monospace,
+//                                fontFamily = FontFamily.Monospace,
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth())
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }
             }
         }
-
-
     }
 }
 
 
-fun calculateGradePoint(grade: String, credit: Int) : Double{
-    return when(grade.uppercase())
-    {
-        "A"-> 4.0
-        "B"-> 3.0
-        "C"-> 2.0
-        "D"-> 1.0
+fun calculateGradePoint(grade: String, credit: Int): Double {
+    return when (grade.uppercase()) {
+        "A" -> 4.0
+        "B" -> 3.0
+        "C" -> 2.0
+        "D" -> 1.0
         else -> 0.0
     } * credit
 
@@ -198,55 +248,64 @@ fun calculateGradePoint(grade: String, credit: Int) : Double{
 
 @Composable
 fun subjectText(subject: String) {
-    Text(text = subject,
-        modifier = Modifier.fillMaxWidth(),
-        style = TextStyle(fontSize = 16.sp,
+    Text(
+        text = subject, modifier = Modifier.fillMaxWidth(), style = TextStyle(
+            fontSize = 16.sp,
             //textAlign = TextAlign.Center,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.W800 )
-    )
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun GradeTextField(grade: String, onValueChange:(String)->Unit){
-    TextField(value = grade, onValueChange = {text ->
-        onValueChange(text)
-    }, modifier = Modifier
-        .fillMaxWidth()
-        .height(50.dp),
-        label = { Text(text = "Enter Grade", color = Color.White, fontSize = 14.sp)},
-        colors = TextFieldDefaults.textFieldColors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            containerColor = Color(0xFF7E57C2)
-        ), shape = RoundedCornerShape(15.dp),
-        textStyle = TextStyle(fontSize = 12.sp, color = Color.White),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            fontFamily = FontFamily.Monospace, fontWeight = FontWeight.W800
         )
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreditTextField(credit: Int?, onValueChange:(Int?)->Unit){
-    TextField(value = credit?.toString() ?:"", onValueChange = {text ->
-        onValueChange(text.toIntOrNull())
-    }, modifier = Modifier
-        .fillMaxWidth()
-        .height(50.dp),
-        label = { Text(text = "Enter Credit", color = Color.Black, fontSize = 14.sp)},
+fun GradeTextField(grade: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = grade,
+        onValueChange = { text ->
+            onValueChange(text)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        label = { Text(text = "Enter Grade", color = Color.White, fontSize = 14.sp) },
+        colors = TextFieldDefaults.textFieldColors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            containerColor = Color(0xFF7E57C2)
+        ),
+        shape = RoundedCornerShape(15.dp),
+        textStyle = TextStyle(fontSize = 12.sp, color = Color.White),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreditTextField(credit: Int?, onValueChange: (Int?) -> Unit) {
+    TextField(
+        value = credit?.toString() ?: "",
+        onValueChange = { text ->
+            onValueChange(text.toIntOrNull())
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        label = { Text(text = "Enter Credit", color = Color.Black, fontSize = 14.sp) },
         colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             containerColor = Color(0xFF7D8CCED)
-        ), shape = RoundedCornerShape(15.dp),
+        ),
+        shape = RoundedCornerShape(15.dp),
         textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
 
     )
 }
+
 @Composable
-fun Spacer8dp()
-{
+fun Spacer8dp() {
     Spacer(modifier = Modifier.padding(top = 8.dp))
 }
 //@Preview(showBackground = true)
